@@ -1,160 +1,117 @@
 import streamlit as st
 import numpy as np
-import cv2
-from tensorflow.keras.models import load_model
 from PIL import Image
+from tensorflow.keras.models import load_model
 
-# ---------------- PAGE CONFIG ----------------
-
+# =========================
+# PAGE CONFIG
+# =========================
 st.set_page_config(
-    page_title="GeoAI Intelligent Analyzer",
+    page_title="GeoAI Intelligent Satellite Image Analyzer",
     page_icon="🌍",
     layout="centered"
 )
 
-# ---------------- LOAD MODEL ----------------
-
-model = load_model("geoai_cnn_model.h5")
-
-# ---------------- CUSTOM CSS ----------------
-
+# =========================
+# CUSTOM CSS
+# =========================
 st.markdown("""
 <style>
 
-/* Import Modern Font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* Global Font */
 html, body, [class*="css"] {
     font-family: 'Poppins', sans-serif;
+    background-color: #f5f7fb;
+    color: #111111;
 }
 
-/* Main App Background */
-.stApp {
-    background-color: #F5F7FA;
-    color: #111827;
+.main {
+    background-color: #f5f7fb;
 }
 
-/* Main Title */
-h1 {
-    color: #0F172A;
-    text-align: center;
-    font-size: 3.2rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-
-/* Subheadings */
-h2, h3 {
-    color: #2563EB;
-    font-weight: 600;
-}
-
-/* Paragraphs */
-p {
-    color: #374151;
-    font-size: 17px;
-}
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background-color: #FFFFFF;
-    border-right: 1px solid #E5E7EB;
-}
-
-/* Sidebar Text */
-section[data-testid="stSidebar"] * {
-    color: #111827;
-}
-
-/* Sidebar Box */
-[data-testid="stSidebar"] .stAlert {
-    background-color: #EFF6FF;
-    border-radius: 12px;
-    border: 1px solid #BFDBFE;
-}
-
-/* Upload Box */
-[data-testid="stFileUploader"] {
-    background-color: #FFFFFF;
-    padding: 20px;
-    border-radius: 16px;
-    border: 2px dashed #2563EB;
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.05);
-}
-
-/* Drag & Drop Area */
-[data-testid="stFileUploaderDropzone"] {
-    background-color: #F9FAFB;
-    border-radius: 12px;
-}
-
-/* Browse Button */
-[data-testid="stBaseButton-secondary"] {
-    background-color: #2563EB !important;
-    color: white !important;
-    border-radius: 10px !important;
-    border: none !important;
-    font-weight: 600 !important;
-}
-
-/* Browse Button Hover */
-[data-testid="stBaseButton-secondary"]:hover {
-    background-color: #1D4ED8 !important;
-    color: white !important;
-}
-
-/* Success Box */
-.stSuccess {
-    background-color: #DCFCE7;
-    color: #166534;
-    border-radius: 12px;
-    padding: 15px;
-    border: 1px solid #86EFAC;
-}
-
-/* Info Box */
-.stInfo {
-    background-color: #DBEAFE;
-    color: #1E3A8A;
-    border-radius: 12px;
-    padding: 15px;
-    border: 1px solid #93C5FD;
-}
-
-/* Progress Bar */
-.stProgress > div > div > div > div {
-    background-color: #2563EB;
-}
-
-/* Uploaded Image */
-img {
-    border-radius: 18px;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
-}
-
-/* Footer */
-footer {
-    visibility: hidden;
-}
-
-/* Main Content Box */
 .block-container {
+    max-width: 850px;
     padding-top: 2rem;
     padding-bottom: 2rem;
 }
 
-/* Divider */
-hr {
-    border: 1px solid #E5E7EB;
+/* Main Title */
+.main-title {
+    text-align: center;
+    font-size: 42px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+/* Subtitle */
+.sub-text {
+    text-align: center;
+    font-size: 18px;
+    color: #4b5563;
+    margin-bottom: 35px;
+}
+
+/* Upload Box */
+.upload-box {
+    background: white;
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0px 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+}
+
+/* Result Box */
+.result-box {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0px 4px 20px rgba(0,0,0,0.08);
+    margin-top: 25px;
+}
+
+/* Prediction Text */
+.prediction {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+/* Confidence */
+.confidence {
+    font-size: 20px;
+    font-weight: 600;
+    color: #16a34a;
+}
+
+/* Explanation */
+.explanation {
+    font-size: 17px;
+    color: #374151;
+    line-height: 1.8;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    color: gray;
+    font-size: 14px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- CLASS LABELS ----------------
+# =========================
+# LOAD MODEL
+# =========================
+model = load_model("geoai_cnn_model.h5")
 
-classes = [
+# =========================
+# CLASS LABELS
+# =========================
+class_names = [
     "AnnualCrop",
     "Forest",
     "HerbaceousVegetation",
@@ -167,24 +124,24 @@ classes = [
     "SeaLake"
 ]
 
-# ---------------- GEOAI EXPLANATIONS ----------------
-
-geo_explanations = {
-
+# =========================
+# KNOWLEDGE BASE
+# =========================
+geo_knowledge = {
     "AnnualCrop":
-    "This region primarily contains seasonal agricultural land used for annual crop cultivation.",
+    "This region contains seasonal agricultural crop fields and farming patterns.",
 
     "Forest":
-    "This area is dominated by dense vegetation and forest cover with minimal human settlement.",
+    "This region contains dense forest cover and rich vegetation.",
 
     "HerbaceousVegetation":
     "This region contains low-growing vegetation such as grasses and herbaceous plant cover.",
 
     "Highway":
-    "This area contains major transportation routes and road infrastructure connecting regions.",
+    "This region includes road transportation networks and highway structures.",
 
     "Industrial":
-    "This region represents industrial infrastructure including factories, warehouses, and manufacturing zones.",
+    "This area contains industrial buildings, factories, or infrastructure.",
 
     "Pasture":
     "This area is mainly used for grazing livestock and open pasture land activities.",
@@ -202,128 +159,93 @@ geo_explanations = {
     "This area represents large water bodies such as lakes, reservoirs, or coastal sea regions."
 }
 
-# ---------------- CHATBOT FUNCTION ----------------
-
-def geoai_chatbot(predicted_class):
-
-    if predicted_class in ["AnnualCrop", "PermanentCrop", "Pasture"]:
-        return "This land appears suitable for agriculture and farming-related activities."
-
-    elif predicted_class in ["Forest", "HerbaceousVegetation"]:
-        return "The image indicates significant vegetation and ecological coverage."
-
-    elif predicted_class in ["Residential", "Industrial", "Highway"]:
-        return "This region shows strong urban or infrastructure development."
-
-    elif predicted_class in ["River", "SeaLake"]:
-        return "This area is dominated by water-body structures and aquatic geography."
-
-    else:
-        return "GeoAI system successfully analyzed this satellite image."
-
-# ---------------- SIDEBAR ----------------
-
-st.sidebar.title("🌍 GeoAI System")
-
-st.sidebar.info(
-"""
-AI-Powered Geo-Intelligent Conversational System
-
-Features:
-✔ Satellite Image Classification
-
-✔ GeoAI Interpretation
-
-✔ Explainable AI
-
-✔ Conversational Intelligence
-
-✔ Confidence Analysis
-"""
+# =========================
+# TITLE
+# =========================
+st.markdown(
+    '<div class="main-title">🌍 GeoAI Intelligent Satellite Image Analyzer</div>',
+    unsafe_allow_html=True
 )
-
-# ---------------- MAIN TITLE ----------------
-
-st.title("🌍 GeoAI Intelligent Satellite Image Analyzer")
 
 st.markdown(
-"""
-### Upload a satellite image for AI-powered geospatial analysis
-"""
+    '<div class="sub-text">Upload a satellite image for AI-powered geospatial analysis</div>',
+    unsafe_allow_html=True
 )
 
-# ---------------- FILE UPLOADER ----------------
-
+# =========================
+# FILE UPLOADER
+# =========================
 uploaded_file = st.file_uploader(
     "📤 Upload Satellite Image",
     type=["jpg", "jpeg", "png"]
 )
 
-# ---------------- PREDICTION SECTION ----------------
-
+# =========================
+# PREDICTION
+# =========================
 if uploaded_file is not None:
 
-    # Read Image
     image = Image.open(uploaded_file).convert("RGB")
 
-    # Display Uploaded Image
     st.image(
         image,
         caption="🛰 Uploaded Satellite Image",
         use_container_width=True
     )
 
-    # Convert Image
+    # Resize using PIL (NO CV2)
+    image = image.resize((64, 64))
+
+    # Convert to array
     image_array = np.array(image)
 
-    image_resized = cv2.resize(image_array, (64, 64))
+    # Normalize
+    image_array = image_array / 255.0
 
-    image_resized = image_resized / 255.0
-
-    image_input = np.expand_dims(image_resized, axis=0)
+    # Expand dimensions
+    image_input = np.expand_dims(image_array, axis=0)
 
     # Prediction
     prediction = model.predict(image_input)
 
     predicted_index = np.argmax(prediction)
 
-    predicted_class = classes[predicted_index]
+    predicted_class = class_names[predicted_index]
 
     confidence_score = np.max(prediction) * 100
 
-    geo_explanation = geo_explanations[predicted_class]
+    geo_explanation = geo_knowledge[predicted_class]
 
-    chatbot_response = geoai_chatbot(predicted_class)
+    # =========================
+    # RESULTS
+    # =========================
+    st.markdown('<div class="result-box">', unsafe_allow_html=True)
 
-    # ---------------- RESULTS ----------------
+    st.markdown(
+        f'<div class="prediction">Predicted Class: {predicted_class}</div>',
+        unsafe_allow_html=True
+    )
 
-    st.success("✅ GeoAI Analysis Completed Successfully!")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    st.subheader("📌 Prediction Result")
+    st.markdown(
+        f'<div class="confidence">Confidence Score: {confidence_score:.2f}%</div>',
+        unsafe_allow_html=True
+    )
 
-    st.write(f"### 🏷 Predicted Class: {predicted_class}")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    st.write(f"### 🎯 Confidence Score: {confidence_score:.2f}%")
+    st.markdown(
+        f'<div class="explanation">{geo_explanation}</div>',
+        unsafe_allow_html=True
+    )
 
-    st.progress(int(confidence_score))
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.subheader("🌍 GeoAI Interpretation")
-
-    st.info(geo_explanation)
-
-    st.subheader("🤖 GeoAI Assistant")
-
-    st.success(chatbot_response)
-
-# ---------------- FOOTER ----------------
-
-st.markdown("---")
-
+# =========================
+# FOOTER
+# =========================
 st.markdown(
-"""
-<center>
-Developed using Deep Learning, GeoAI and Streamlit
-</center>
-""",
-unsafe_allow_html=True
+    '<div class="footer">Developed using Deep Learning, GeoAI and Streamlit</div>',
+    unsafe_allow_html=True
 )
