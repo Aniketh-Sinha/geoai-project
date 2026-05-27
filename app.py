@@ -106,7 +106,7 @@ html, body, [class*="css"] {
 # =========================
 # LOAD MODEL
 # =========================
-model = load_model("geoai_cnn_model.h5")
+model = load_model("geoai_cnn_model.h5", compile=False)
 
 # =========================
 # CLASS LABELS
