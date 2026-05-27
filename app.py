@@ -106,7 +106,7 @@ html, body, [class*="css"] {
 # =========================
 # LOAD MODEL
 # =========================
-model = load_model("geoai_final.keras", compile=False)
+model = load_model("geoai_compatible.keras", compile=False)
 
 # =========================
 # CLASS LABELS
